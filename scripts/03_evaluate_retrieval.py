@@ -31,8 +31,16 @@ DOCUMENTS = [
 
 BENCHMARK = [
     {
+        "query":"What external knowledge does the system fetch before responding?",
+        "positive_doc_id":"D1",
+    },
+    {
         "query": "What does RAG retrieve before answering?",
         "positive_doc_id": "D1",
+    },
+    {
+        "query": "Which system is used for nearest-neighbor vector lookup?",
+        "positive_doc_id": "D2",
     },
     {
         "query": "Which tool performs vector similarity search?",
@@ -43,11 +51,23 @@ BENCHMARK = [
         "positive_doc_id": "D3",
     },
     {
+        "query": "What objective makes similar examples close in embedding space?",
+        "positive_doc_id": "D3",
+    },
+    {
         "query": "What breaks balance in judo before a throw?",
         "positive_doc_id": "D4",
     },
     {
+        "query": "What Japanese judo idea means breaking balance?",
+        "positive_doc_id": "D4",
+    },
+    {
         "query": "What updates neural network parameters?",
+        "positive_doc_id": "D5",
+    },
+    {
+        "query": "What algorithm changes model weights using derivatives?",
         "positive_doc_id": "D5",
     },
 ]

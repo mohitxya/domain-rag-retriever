@@ -1,0 +1,5 @@
+{"query_id":"q001","query":"What external information does the system fetch before producing a response?","positive_title":"Retrieval Augmented Generation"}
+{"query_id":"q002","query":"Which tool is useful for nearest-neighbor lookup over embedding vectors?","positive_title":"FAISS Vector Search"}
+{"query_id":"q003","query":"What objective makes representations of matching items close?","positive_title":"Contrastive Learning"}
+{"query_id":"q004","query":"What Japanese concept refers to off-balancing an opponent?","positive_title":"Judo Kuzushi"}
+{"query_id":"q005","query":"What optimization method changes weights using derivative information?","positive_title":"Gradient Descent"}
