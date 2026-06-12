@@ -1,0 +1,19 @@
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Local environments
+.venv/
+venv/
+env/
+
+# Generated datasets and training artifacts
+data/arxiv/
+data/train/
+outputs/
+
+# Large model/checkpoint artifacts
+*.safetensors
+*.pt
+*.pth
+*.bin
