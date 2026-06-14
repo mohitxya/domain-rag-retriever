@@ -265,23 +265,6 @@ python -m scripts.25_evaluate_arxiv_quantization \
   --limit-queries 1000
 ```
 
-## What Makes It Resume-Ready
-
-This project demonstrates:
-
-- Retrieval fundamentals: sparse retrieval, dense retrieval, FAISS indexing, ranking.
-- ML evaluation discipline: Recall, MRR, nDCG, MAP, hard-negative evaluation.
-- Fine-tuning: MNRL, cached MNRL, larger effective batch sizes.
-- Data engineering: preprocessing, chunking, weak supervision, generated benchmarks.
-- Systems thinking: latency, index size, quantization, reproducible result logs.
-- Realistic RAG architecture: dense retrieval, BM25 fallback, hybrid scoring, reranking.
-
-Strong resume framing:
-
-```text
-Built an end-to-end domain retrieval training lab for RAG: prepared ArXiv retrieval data, fine-tuned sentence-transformer encoders with cached contrastive learning, mined hard negatives, benchmarked MiniLM/E5/BGE baselines, added hybrid BM25+dense retrieval and cross-encoder reranking, and measured quantization tradeoffs across retrieval quality, latency, and storage.
-```
-
 ## Next Robustness Improvements
 
 - Add a small CI smoke test that runs non-network toy experiments.
