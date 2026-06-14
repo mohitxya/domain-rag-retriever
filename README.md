@@ -4,6 +4,15 @@ An end-to-end retrieval training lab for domain-specific RAG systems.
 
 The project builds a retrieval stack from first principles, then upgrades it into a resume-ready experimental system: preprocessing, dense retrieval, evaluation, contrastive fine-tuning, cached MNRL, hard-negative mining, encoder baselines, hybrid retrieval, cross-encoder reranking, and quantization tradeoff analysis.
 
+## Start Here
+
+- Read the experiment plan and running log in [experiments.md](experiments.md).
+- Run the full suite with [scripts/22_run_all_experiments.py](scripts/22_run_all_experiments.py).
+- Fine-tune embedding models with [scripts/10_train_contrastive.py](scripts/10_train_contrastive.py).
+- Evaluate full-corpus ArXiv retrieval with [scripts/17_evaluate_arxiv.py](scripts/17_evaluate_arxiv.py).
+- Evaluate hard-negative ranking with [scripts/20_evaluate_arxiv_hard_negatives.py](scripts/20_evaluate_arxiv_hard_negatives.py).
+- Inspect the latest generated report in [output.md](output.md).
+
 ## Why This Project Exists
 
 Most RAG demos stop at "embed documents and search." This repo is meant to show the harder engineering work behind a credible retrieval system:
@@ -40,6 +49,21 @@ Most RAG demos stop at "embed documents and search." This repo is meant to show 
   - `outputs/metrics.jsonl`
   - failure logs under `outputs/experiment_logs/`
 
+## How The Pipeline Fits Together
+
+```text
+raw docs
+  -> clean/chunk
+  -> make query-positive pairs
+  -> train dense retriever
+  -> evaluate full-corpus retrieval
+  -> mine hard negatives
+  -> evaluate fine-grained ranking
+  -> compare baselines, hybrid retrieval, reranking, quantization
+```
+
+The canonical experiment narrative lives in [experiments.md](experiments.md). The automated version of that narrative lives in [scripts/22_run_all_experiments.py](scripts/22_run_all_experiments.py).
+
 ## Repository Layout
 
 ```text
@@ -71,6 +95,22 @@ outputs/
   metrics.jsonl
   experiment_logs/
 ```
+
+## Important Files
+
+| File | Role |
+|---|---|
+| [experiments.md](experiments.md) | Human-readable experiment log and project roadmap |
+| [scripts/22_run_all_experiments.py](scripts/22_run_all_experiments.py) | One-command experiment runner |
+| [scripts/10_train_contrastive.py](scripts/10_train_contrastive.py) | Main training script for MNRL and cached MNRL |
+| [scripts/09_train_mnrl.py](scripts/09_train_mnrl.py) | Earlier/simple MNRL training script |
+| [scripts/17_evaluate_arxiv.py](scripts/17_evaluate_arxiv.py) | Full-corpus ArXiv retrieval evaluation |
+| [scripts/20_evaluate_arxiv_hard_negatives.py](scripts/20_evaluate_arxiv_hard_negatives.py) | Hard-negative evaluation |
+| [scripts/23_evaluate_arxiv_hybrid.py](scripts/23_evaluate_arxiv_hybrid.py) | Hybrid BM25 + dense retrieval |
+| [scripts/24_rerank_arxiv_cross_encoder.py](scripts/24_rerank_arxiv_cross_encoder.py) | Cross-encoder reranking |
+| [scripts/25_evaluate_arxiv_quantization.py](scripts/25_evaluate_arxiv_quantization.py) | Embedding quantization tradeoff experiment |
+| [requirements.txt](requirements.txt) | Minimal pip dependency list |
+| [environment.yml](environment.yml) | Full Conda environment |
 
 ## Setup
 
@@ -112,6 +152,33 @@ python -m scripts.22_run_all_experiments --timeout 3600
 ```
 
 The runner writes a human-readable report to `output.md` and machine-readable metrics to `outputs/metrics.jsonl`.
+
+## Training Script
+
+The main training entry point is [scripts/10_train_contrastive.py](scripts/10_train_contrastive.py). It supports both normal Multiple Negatives Ranking Loss and cached MNRL:
+
+```bash
+python -m scripts.10_train_contrastive \
+  --pairs data/arxiv/pairs.jsonl \
+  --model sentence-transformers/all-MiniLM-L6-v2 \
+  --loss cached_mnrl \
+  --batch-size 128 \
+  --mini-batch-size 16 \
+  --epochs 1 \
+  --output outputs/arxiv-minilm-cached-10k
+```
+
+Useful arguments:
+
+| Argument | Meaning |
+|---|---|
+| `--pairs` | JSONL training pairs with `query` and `positive_text` |
+| `--model` | Base Sentence Transformers model or local checkpoint |
+| `--loss` | `mnrl` or `cached_mnrl` |
+| `--batch-size` | Effective contrastive batch size |
+| `--mini-batch-size` | Internal cached-MNRL mini-batch size |
+| `--epochs` | Number of training epochs |
+| `--output` | Directory where the fine-tuned model is saved |
 
 ## Key Experiments
 
