@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from domainrag.io import read_jsonl
+from domainrag.io import read_jsonl, write_jsonl
 
 
 @dataclass
@@ -819,6 +819,7 @@ def re_search(text: str, pattern: str) -> str:
 
 
 def run_step(step: Step, env: dict[str, str], timeout: int | None) -> tuple[int, str, str, float]:
+    ensure_required_inputs(step)
     start = time.monotonic()
     proc = subprocess.run(
         step.command,
@@ -830,6 +831,41 @@ def run_step(step: Step, env: dict[str, str], timeout: int | None) -> tuple[int,
     )
     elapsed = time.monotonic() - start
     return proc.returncode, proc.stdout, proc.stderr, elapsed
+
+
+def ensure_required_inputs(step: Step) -> None:
+    if "data/train/manual_pairs.jsonl" not in step.command:
+        return
+
+    manual_pairs_path = Path("data/train/manual_pairs.jsonl")
+    if manual_pairs_path.exists():
+        return
+
+    chunks = read_jsonl("data/processed/chunks.jsonl")
+    benchmark = read_jsonl("data/benchmark/queries.jsonl")
+    chunks_by_title = {chunk["title"]: chunk for chunk in chunks}
+
+    pairs = []
+    for item in benchmark:
+        chunk = chunks_by_title.get(item["positive_title"])
+        if not chunk:
+            continue
+        pairs.append(
+            {
+                "query_id": item["query_id"],
+                "query": item["query"],
+                "positive_chunk_id": chunk["chunk_id"],
+                "positive_text": chunk["text"],
+                "source": chunk.get("source", "toy"),
+                "pair_type": "manual_query_to_chunk",
+            }
+        )
+
+    if not pairs:
+        raise ValueError("Could not create data/train/manual_pairs.jsonl from benchmark and chunks.")
+
+    manual_pairs_path.parent.mkdir(parents=True, exist_ok=True)
+    write_jsonl(str(manual_pairs_path), pairs)
 
 
 def write_output(

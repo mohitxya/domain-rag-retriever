@@ -1,0 +1,17 @@
+# Core numeric/data stack
+numpy>=2.0
+pandas>=2.0
+pyarrow>=15.0
+
+# Retrieval/indexing
+faiss-cpu>=1.8
+rank-bm25>=0.2.2
+
+# Model training and evaluation
+torch>=2.3
+sentence-transformers>=3.0
+datasets>=2.18
+accelerate>=0.30
+
+# Optional dataframe preview used by scripts/04_process_data.py --daft-preview
+daft>=0.3
