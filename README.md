@@ -1,270 +1,228 @@
-# Domain RAG
+# Domain RAG Retriever
 
-#### Goal
+An end-to-end retrieval training lab for domain-specific RAG systems.
 
-- Build a complete retrieval system from first principles.
-- Start with a working baseline.
-- Add evaluation.
-- Add scalable data processing.
-- Fine-tune embedding models.
-- Add hard-negative mining.
-- Compare encoder baselines.
-- Run quantization experiments.
-- Explore decoder-as-encoder retrieval.
-- Keep the project educational, modular, and research-oriented.
+The project builds a retrieval stack from first principles, then upgrades it into a resume-ready experimental system: preprocessing, dense retrieval, evaluation, contrastive fine-tuning, cached MNRL, hard-negative mining, encoder baselines, hybrid retrieval, cross-encoder reranking, and quantization tradeoff analysis.
 
-#### Current Status
+## Why This Project Exists
 
-- Core retrieval pipeline is being built step by step.
-- The project is currently focused on correctness, clarity, and hands-on implementation.
-- The long-term goal is to turn this into a strong RAG/retrieval engineering portfolio project.
+Most RAG demos stop at "embed documents and search." This repo is meant to show the harder engineering work behind a credible retrieval system:
 
-#### Built So Far
+- Build repeatable datasets and benchmarks.
+- Evaluate with retrieval metrics instead of vibes.
+- Fine-tune embedding models and compare them against strong baselines.
+- Mine hard negatives and test fine-grained ranking behavior.
+- Measure quality, latency, and storage tradeoffs.
+- Produce clean experiment artifacts that can support resume/project claims.
 
-#### Project Structure
+## Current Capabilities
 
-- Basic project direction defined.
-- Milestone order finalized.
-- Retrieval-first roadmap chosen before advanced model optimization.
+- Toy sparse and dense retrieval from scratch.
+- Chunking and preprocessing pipeline for raw documents.
+- ArXiv title-to-abstract retrieval dataset preparation.
+- Full-corpus retrieval evaluation with:
+  - Recall@1, Recall@5, Recall@10
+  - MRR@10
+  - nDCG@10
+  - MAP@10
+  - latency per query
+  - index size estimate
+- Hard-negative evaluation with Accuracy@1, MRR, average rank, and latency.
+- Normal MNRL and cached MNRL fine-tuning.
+- BM25 and random hard-negative mining.
+- Prefix-aware E5 evaluation.
+- MiniLM, E5, BGE, and fine-tuned model comparisons.
+- Hybrid BM25 + dense retrieval.
+- Cross-encoder reranking over dense candidates.
+- Float32, float16, and int8 embedding quantization experiments.
+- One-command experiment runner that writes:
+  - `output.md`
+  - `outputs/metrics.jsonl`
+  - failure logs under `outputs/experiment_logs/`
 
-#### Retrieval System
-
-- Initial retrieval system work started.
-- Focus is on understanding the full pipeline before adding complexity.
-
-#### Learning Direction
-
-- Sentence-transformers selected for embedding models.
-- Multiple Negatives Ranking Loss selected as the main fine-tuning objective.
-- Cached MNRL planned for efficient large-batch contrastive training.
-- Daft selected for scalable text/data processing.
-- Hard-negative mining planned after baseline evaluation.
-- Quantization and regularization left for later-stage experiments.
-
-#### Planned Milestones
-
-#### 1. Working Retrieval System
-
-- Build document ingestion.
-- Chunk raw documents into retrievable passages.
-- Embed chunks using a pretrained sentence-transformer model.
-- Store embeddings in a vector index.
-- Retrieve top-k relevant chunks for a query.
-- Return ranked results with scores.
-
-#### 2. Evaluation
-
-- Create a small query-document evaluation set.
-- Add retrieval metrics:
-  - Recall@k
-  - MRR
-  - Precision@k
-  - nDCG
-- Compare different chunk sizes.
-- Compare different embedding models.
-- Track experiments in a simple table or JSON log.
-
-#### 3. Daft Data Processing
-
-- Use Daft for large-scale text preprocessing.
-- Build streaming-friendly document pipelines.
-- Add cleaning, filtering, deduplication, and chunk generation.
-- Save processed datasets in a reusable format.
-
-#### 4. MNRL Fine-Tuning
-
-- Prepare positive query-document pairs.
-- Fine-tune a sentence-transformer model using Multiple Negatives Ranking Loss.
-- Compare pretrained vs fine-tuned embeddings.
-- Evaluate retrieval improvement using the same benchmark.
-
-#### 5. Cached MNRL
-
-- Add cached Multiple Negatives Ranking Loss.
-- Train with larger effective batch sizes.
-- Compare:
-  - normal MNRL
-  - cached MNRL
-  - different batch sizes
-  - different learning rates
-
-#### 6. Hard-Negative Mining
-
-- Retrieve confusing but incorrect documents.
-- Add them as hard negatives during training.
-- Compare random negatives vs mined hard negatives.
-- Measure whether ranking quality improves.
-
-#### 7. Encoder Baselines
-
-- Compare multiple encoder models.
-- Evaluate tradeoffs between:
-  - accuracy
-  - latency
-  - memory usage
-  - embedding dimension
-  - index size
-
-#### 8. Quantization Experiment
-
-- Quantize embeddings or encoder models.
-- Measure retrieval quality drop.
-- Measure speed and memory improvements.
-- Compare full precision vs quantized retrieval.
-
-#### 9. Decoder-as-Encoder Extension
-
-- Explore converting decoder-only models into embedding models.
-- Compare decoder-based embeddings with standard encoder models.
-- Evaluate whether decoder representations are useful for retrieval.
-
-#### 10. Orthogonal Regularization
-
-- Study Global Orthogonal Regularization.
-- Experiment with representation geometry.
-- Measure whether embedding space quality improves.
-- Keep this as a late-stage research extension.
-
-#### Core Concepts Covered
-
-#### Retrieval
-
-- Dense retrieval
-- Embeddings
-- Vector search
-- Similarity scoring
-- Top-k ranking
-- Chunking
-- Query-document matching
-
-#### Evaluation
-
-- Ground-truth relevance labels
-- Recall@k
-- Mean Reciprocal Rank
-- Ranking quality
-- Ablation studies
-- Reproducible experiments
-
-#### Training
-
-- Sentence-transformers
-- Contrastive learning
-- In-batch negatives
-- Multiple Negatives Ranking Loss
-- Cached loss computation
-- Hard-negative mining
-
-#### Systems
-
-- Scalable preprocessing
-- Streaming data pipelines
-- Vector index storage
-- Batch embedding
-- Latency measurement
-- Memory-aware retrieval
-
-#### Research Extensions
-
-- Quantization
-- Representation regularization
-- Decoder-to-encoder adaptation
-- Embedding space analysis
-- Retrieval model comparison
-
-#### Repository Goals
-
-- Clean implementation.
-- Clear educational code.
-- Strong experiment tracking.
-- Reproducible results.
-- Portfolio-ready README and diagrams.
-- Research-paper-inspired extensions.
-
-#### Expected Final Demo
-
-- User enters a query.
-- System retrieves relevant document chunks.
-- Retrieved chunks are shown with similarity scores.
-- Optional LLM answer generation can use retrieved context.
-- Evaluation dashboard or script reports retrieval metrics.
-
-#### Expected Final Outputs
-
-- Working retrieval pipeline.
-- Processed dataset pipeline.
-- Evaluation benchmark.
-- Fine-tuned retriever.
-- Hard-negative mining pipeline.
-- Baseline comparison table.
-- Quantization results.
-- Research notes.
-- Clean README.
-- Resume-worthy project summary.
-
-#### Suggested Folder Structure
+## Repository Layout
 
 ```text
-domain-rag/
-├── data/
-├── notebooks/
-├── src/
-│   ├── ingestion/
-│   ├── chunking/
-│   ├── embedding/
-│   ├── indexing/
-│   ├── retrieval/
-│   ├── evaluation/
-│   ├── training/
-│   └── utils/
-├── experiments/
-├── configs/
-├── scripts/
-├── reports/
-└── README.md
+domainrag/
+  bm25.py
+  chunking.py
+  cleaning.py
+  io.py
+  splitting.py
+
+scripts/
+  01_bow_retrieval.py
+  02_dense_retrieval.py
+  ...
+  17_evaluate_arxiv.py
+  20_evaluate_arxiv_hard_negatives.py
+  22_run_all_experiments.py
+  23_evaluate_arxiv_hybrid.py
+  24_rerank_arxiv_cross_encoder.py
+  25_evaluate_arxiv_quantization.py
+
+data/
+  raw/
+  processed/
+  benchmark/
+  arxiv/
+
+outputs/
+  metrics.jsonl
+  experiment_logs/
 ```
 
-#### Tech Stack
+## Setup
 
-- Python
-- PyTorch
-- Sentence Transformers
-- Hugging Face
-- Daft
-- FAISS or similar vector index
-- NumPy
-- Pandas or Polars
-- Matplotlib
-- Optional FastAPI UI/backend
+Using pip:
 
-#### Current Priority
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+export PYTHONPATH=.
+```
 
-- Finish the basic retrieval system.
-- Add evaluation immediately after.
-- Avoid advanced training until the baseline is measurable.
+Using the Conda environment:
 
-#### Next Steps
+```bash
+conda env create -f environment.yml
+conda activate rag
+export PYTHONPATH=.
+```
 
-#### Immediate
+On Windows PowerShell:
 
-- Implement document loading.
-- Implement chunking.
-- Generate embeddings.
-- Build vector search.
-- Run a few manual queries.
+```powershell
+$env:PYTHONPATH="."
+```
 
-#### After That
+## Run The Full Experiment Suite
 
-- Create evaluation data.
-- Add metrics.
-- Compare baseline models.
-- Only then start MNRL fine-tuning.
+```bash
+python -m scripts.22_run_all_experiments --output output.md
+```
 
-#### What This Project Demonstrates
+Useful variants:
 
-- Ability to build retrieval systems from scratch.
-- Understanding of modern RAG internals.
-- Practical ML evaluation skills.
-- Experience with embedding model fine-tuning.
-- Systems thinking around data processing and inference.
-- Ability to connect research papers to working code.
+```bash
+python -m scripts.22_run_all_experiments --only exp001 exp004
+python -m scripts.22_run_all_experiments --continue-on-error
+python -m scripts.22_run_all_experiments --timeout 3600
+```
+
+The runner writes a human-readable report to `output.md` and machine-readable metrics to `outputs/metrics.jsonl`.
+
+## Key Experiments
+
+| ID | Experiment | Purpose |
+|---|---|---|
+| exp001-exp003 | Toy retrieval and evaluation | Validate retrieval from first principles |
+| exp004-exp008 | Data processing and pair creation | Build repeatable data artifacts |
+| exp010-exp012 | MNRL and cached MNRL | Fine-tune embedding models |
+| exp014 | Toy hard negatives | Validate negative mining |
+| exp015-exp021 | ArXiv 1k/10k training | Move to a realistic domain dataset |
+| exp022-exp023 | ArXiv hard negatives | Test fine-grained ranking |
+| exp024 | Encoder baselines | Compare MiniLM, E5, BGE, and fine-tuned models |
+| exp025 | Hybrid retrieval | Combine BM25 and dense scoring |
+| exp026 | Cross-encoder reranking | Rerank dense candidates with a stronger relevance model |
+| exp027 | Quantization | Compare quality, latency, and storage |
+| exp028 | BGE fine-tuning | Fine-tune a stronger retrieval-specialized encoder |
+
+## Important Commands
+
+Prepare ArXiv data:
+
+```bash
+python -m scripts.16_prepare_arxiv --limit 10000
+```
+
+Evaluate a dense encoder:
+
+```bash
+python -m scripts.17_evaluate_arxiv \
+  --model sentence-transformers/all-MiniLM-L6-v2 \
+  --limit-queries 1000
+```
+
+Evaluate E5 with the required text prefixes:
+
+```bash
+python -m scripts.17_evaluate_arxiv \
+  --model intfloat/e5-small-v2 \
+  --query-prefix "query: " \
+  --doc-prefix "passage: " \
+  --limit-queries 1000
+```
+
+Train cached MNRL on ArXiv:
+
+```bash
+python -m scripts.10_train_contrastive \
+  --pairs data/arxiv/pairs.jsonl \
+  --loss cached_mnrl \
+  --batch-size 128 \
+  --mini-batch-size 16 \
+  --epochs 1 \
+  --output outputs/arxiv-minilm-cached-10k
+```
+
+Run hybrid BM25 + dense retrieval:
+
+```bash
+python -m scripts.23_evaluate_arxiv_hybrid \
+  --model sentence-transformers/all-MiniLM-L6-v2 \
+  --dense-weight 0.5 \
+  --candidate-k 100 \
+  --limit-queries 1000
+```
+
+Run cross-encoder reranking:
+
+```bash
+python -m scripts.24_rerank_arxiv_cross_encoder \
+  --retriever-model sentence-transformers/all-MiniLM-L6-v2 \
+  --reranker-model cross-encoder/ms-marco-MiniLM-L-6-v2 \
+  --candidate-k 50 \
+  --limit-queries 200
+```
+
+Run quantization tradeoffs:
+
+```bash
+python -m scripts.25_evaluate_arxiv_quantization \
+  --model sentence-transformers/all-MiniLM-L6-v2 \
+  --variants float32,float16,int8 \
+  --limit-queries 1000
+```
+
+## What Makes It Resume-Ready
+
+This project demonstrates:
+
+- Retrieval fundamentals: sparse retrieval, dense retrieval, FAISS indexing, ranking.
+- ML evaluation discipline: Recall, MRR, nDCG, MAP, hard-negative evaluation.
+- Fine-tuning: MNRL, cached MNRL, larger effective batch sizes.
+- Data engineering: preprocessing, chunking, weak supervision, generated benchmarks.
+- Systems thinking: latency, index size, quantization, reproducible result logs.
+- Realistic RAG architecture: dense retrieval, BM25 fallback, hybrid scoring, reranking.
+
+Strong resume framing:
+
+```text
+Built an end-to-end domain retrieval training lab for RAG: prepared ArXiv retrieval data, fine-tuned sentence-transformer encoders with cached contrastive learning, mined hard negatives, benchmarked MiniLM/E5/BGE baselines, added hybrid BM25+dense retrieval and cross-encoder reranking, and measured quantization tradeoffs across retrieval quality, latency, and storage.
+```
+
+## Next Robustness Improvements
+
+- Add a small CI smoke test that runs non-network toy experiments.
+- Save every experiment command and parsed metric to a timestamped run directory.
+- Add model/dataset cards for the best fine-tuned checkpoint.
+- Add a lightweight FastAPI or CLI demo for query-time retrieval.
+- Add significance checks or bootstrap confidence intervals for metric comparisons.
+- Add model-specific formatting for any future encoder families.
+- Add explicit false-negative filtering before training on mined negatives.
+
+## Notes
+
+Large experiments may download Hugging Face models or datasets and can take a long time on CPU. Use `--only` with the experiment runner while developing, then run the full suite when you are ready to produce final tables.

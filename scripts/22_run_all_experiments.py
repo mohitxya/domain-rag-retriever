@@ -603,12 +603,80 @@ EXPERIMENTS = [
         [
             Step("MiniLM full corpus", py("scripts.17_evaluate_arxiv", "--model", "sentence-transformers/all-MiniLM-L6-v2", "--limit-queries", "1000"), "arxiv_eval", model="all-MiniLM-L6-v2", dataset="arxiv 10k"),
             Step("MiniLM hard negatives", py("scripts.20_evaluate_arxiv_hard_negatives", "--model", "sentence-transformers/all-MiniLM-L6-v2", "--triples", "data/arxiv/triples_bm25.jsonl", "--limit", "1000"), "arxiv_hard_eval", model="all-MiniLM-L6-v2", dataset="BM25 arxiv"),
-            Step("E5 full corpus", py("scripts.17_evaluate_arxiv", "--model", "intfloat/e5-small-v2", "--limit-queries", "1000"), "arxiv_eval", model="e5-small-v2", dataset="arxiv 10k"),
-            Step("E5 hard negatives", py("scripts.20_evaluate_arxiv_hard_negatives", "--model", "intfloat/e5-small-v2", "--triples", "data/arxiv/triples_bm25.jsonl", "--limit", "1000"), "arxiv_hard_eval", model="e5-small-v2", dataset="BM25 arxiv"),
+            Step("E5 full corpus", py("scripts.17_evaluate_arxiv", "--model", "intfloat/e5-small-v2", "--query-prefix", "query: ", "--doc-prefix", "passage: ", "--limit-queries", "1000"), "arxiv_eval", model="e5-small-v2", dataset="arxiv 10k"),
+            Step("E5 hard negatives", py("scripts.20_evaluate_arxiv_hard_negatives", "--model", "intfloat/e5-small-v2", "--query-prefix", "query: ", "--doc-prefix", "passage: ", "--triples", "data/arxiv/triples_bm25.jsonl", "--limit", "1000"), "arxiv_hard_eval", model="e5-small-v2", dataset="BM25 arxiv"),
             Step("BGE full corpus", py("scripts.17_evaluate_arxiv", "--model", "BAAI/bge-small-en-v1.5", "--limit-queries", "1000"), "arxiv_eval", model="bge-small-en-v1.5", dataset="arxiv 10k"),
             Step("BGE hard negatives", py("scripts.20_evaluate_arxiv_hard_negatives", "--model", "BAAI/bge-small-en-v1.5", "--triples", "data/arxiv/triples_bm25.jsonl", "--limit", "1000"), "arxiv_hard_eval", model="bge-small-en-v1.5", dataset="BM25 arxiv"),
             Step("Fine-tuned MiniLM full corpus", py("scripts.17_evaluate_arxiv", "--model", "outputs/arxiv-minilm-cached-10k", "--limit-queries", "1000"), "arxiv_eval", model="arxiv-minilm-cached-10k", loss="cached MNRL", dataset="arxiv 10k"),
             Step("Fine-tuned MiniLM hard negatives", py("scripts.20_evaluate_arxiv_hard_negatives", "--model", "outputs/arxiv-minilm-cached-10k", "--triples", "data/arxiv/triples_bm25.jsonl", "--limit", "1000"), "arxiv_hard_eval", model="arxiv-minilm-cached-10k", loss="cached MNRL", dataset="BM25 arxiv"),
+        ],
+    ),
+    Experiment(
+        "exp025",
+        "hybrid_bm25_dense_arxiv",
+        [
+            Step(
+                "Hybrid BM25 + dense retrieval",
+                py("scripts.23_evaluate_arxiv_hybrid", "--model", "sentence-transformers/all-MiniLM-L6-v2", "--dense-weight", "0.5", "--candidate-k", "100", "--limit-queries", "1000"),
+                "arxiv_eval",
+                model="hybrid:minilm+bm25",
+                dataset="arxiv 10k",
+            ),
+        ],
+    ),
+    Experiment(
+        "exp026",
+        "cross_encoder_reranking_arxiv",
+        [
+            Step(
+                "Cross-encoder rerank dense candidates",
+                py("scripts.24_rerank_arxiv_cross_encoder", "--retriever-model", "sentence-transformers/all-MiniLM-L6-v2", "--reranker-model", "cross-encoder/ms-marco-MiniLM-L-6-v2", "--candidate-k", "50", "--limit-queries", "200"),
+                "arxiv_eval",
+                model="minilm + cross-encoder/ms-marco-MiniLM-L-6-v2",
+                dataset="arxiv 10k rerank",
+            ),
+        ],
+    ),
+    Experiment(
+        "exp027",
+        "embedding_quantization_tradeoff",
+        [
+            Step(
+                "Evaluate float32/float16/int8 embeddings",
+                py("scripts.25_evaluate_arxiv_quantization", "--model", "sentence-transformers/all-MiniLM-L6-v2", "--variants", "float32,float16,int8", "--limit-queries", "1000"),
+                "quantization_eval",
+                model="all-MiniLM-L6-v2",
+                dataset="arxiv 10k",
+            ),
+        ],
+    ),
+    Experiment(
+        "exp028",
+        "finetune_bge_small_cached_mnrl",
+        [
+            Step(
+                "Train BGE-small cached MNRL",
+                py("scripts.10_train_contrastive", "--pairs", "data/arxiv/pairs.jsonl", "--model", "BAAI/bge-small-en-v1.5", "--loss", "cached_mnrl", "--batch-size", "64", "--mini-batch-size", "16", "--epochs", "1", "--output", "outputs/arxiv-bge-small-cached-10k"),
+                "train",
+                model="outputs/arxiv-bge-small-cached-10k",
+                loss="cached MNRL",
+            ),
+            Step(
+                "Evaluate fine-tuned BGE-small",
+                py("scripts.17_evaluate_arxiv", "--model", "outputs/arxiv-bge-small-cached-10k", "--limit-queries", "1000"),
+                "arxiv_eval",
+                model="arxiv-bge-small-cached-10k",
+                loss="cached MNRL",
+                dataset="arxiv 10k",
+            ),
+            Step(
+                "Evaluate fine-tuned BGE-small on hard negatives",
+                py("scripts.20_evaluate_arxiv_hard_negatives", "--model", "outputs/arxiv-bge-small-cached-10k", "--triples", "data/arxiv/triples_bm25.jsonl", "--limit", "1000"),
+                "arxiv_hard_eval",
+                model="arxiv-bge-small-cached-10k",
+                loss="cached MNRL",
+                dataset="BM25 arxiv",
+            ),
         ],
     ),
 ]
@@ -627,32 +695,40 @@ def read_count(path: str) -> int:
 
 
 def extract_mapping(stdout: str) -> dict[str, Any]:
-    for line in reversed(stdout.splitlines()):
-        line = line.strip()
-        if not line.startswith("{") or not line.endswith("}"):
-            continue
-        parsed = parse_mapping(line)
-        if parsed:
-            return parsed
-
-    start = stdout.find("{")
-    end = stdout.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        parsed = parse_mapping(stdout[start : end + 1])
-        if parsed:
-            return parsed
+    value = extract_json_value(stdout)
+    if isinstance(value, dict):
+        return value
     return {}
 
 
-def parse_mapping(text: str) -> dict[str, Any]:
+def extract_json_value(stdout: str) -> Any:
+    for line in reversed(stdout.splitlines()):
+        line = line.strip()
+        if not line:
+            continue
+        if (line.startswith("{") and line.endswith("}")) or (line.startswith("[") and line.endswith("]")):
+            parsed = parse_jsonish(line)
+            if parsed is not None:
+                return parsed
+
+    for opener, closer in [("{", "}"), ("[", "]")]:
+        start = stdout.find(opener)
+        end = stdout.rfind(closer)
+        if start != -1 and end != -1 and end > start:
+            parsed = parse_jsonish(stdout[start : end + 1])
+            if parsed is not None:
+                return parsed
+    return None
+
+
+def parse_jsonish(text: str) -> Any:
     try:
-        parsed = json.loads(text)
+        return json.loads(text)
     except json.JSONDecodeError:
         try:
-            parsed = ast.literal_eval(text)
+            return ast.literal_eval(text)
         except (SyntaxError, ValueError):
-            return {}
-    return parsed if isinstance(parsed, dict) else {}
+            return None
 
 
 def fmt(value: Any) -> str:
@@ -716,8 +792,34 @@ def summarize_step(exp: Experiment, step: Step, stdout: str, returncode: int) ->
                 "recall@5": metrics.get("recall@5"),
                 "recall@10": metrics.get("recall@10"),
                 "mrr@10": metrics.get("mrr@10"),
+                "ndcg@10": metrics.get("ndcg@10"),
+                "map@10": metrics.get("map@10"),
+                "latency_ms_per_query": metrics.get("latency_ms_per_query"),
+                "index_size_bytes": metrics.get("index_size_bytes"),
             }
         )
+    elif step.kind == "quantization_eval":
+        parsed = extract_json_value(stdout)
+        if isinstance(parsed, list):
+            for item in parsed:
+                if not isinstance(item, dict):
+                    continue
+                rows.append(
+                    {
+                        "experiment": exp.exp_id,
+                        "task": step.dataset,
+                        "model": item.get("model", step.model),
+                        "variant": item.get("variant"),
+                        "recall@1": item.get("recall@1"),
+                        "recall@5": item.get("recall@5"),
+                        "recall@10": item.get("recall@10"),
+                        "mrr@10": item.get("mrr@10"),
+                        "ndcg@10": item.get("ndcg@10"),
+                        "map@10": item.get("map@10"),
+                        "latency_ms_per_query": item.get("latency_ms_per_query"),
+                        "doc_storage_bytes": item.get("doc_storage_bytes"),
+                    }
+                )
     elif step.kind == "arxiv_hard_eval":
         rows.append(
             {
@@ -896,9 +998,27 @@ def write_output(
             row.get("recall@5"),
             row.get("recall@10"),
             row.get("mrr@10"),
+            row.get("ndcg@10"),
+            row.get("map@10"),
+            row.get("latency_ms_per_query"),
         ]
         for row in summary_rows
-        if "recall@10" in row
+        if "recall@10" in row and "variant" not in row
+    ]
+    quantization_rows = [
+        [
+            row.get("experiment"),
+            row.get("model"),
+            row.get("variant"),
+            row.get("recall@10"),
+            row.get("mrr@10"),
+            row.get("ndcg@10"),
+            row.get("map@10"),
+            row.get("latency_ms_per_query"),
+            row.get("doc_storage_bytes"),
+        ]
+        for row in summary_rows
+        if "variant" in row
     ]
     hard_rows = [
         [
@@ -965,12 +1085,21 @@ def write_output(
         "## Toy Retrieval Metrics",
         markdown_table(["Experiment", "Task", "Model", "Loss", "Recall@3", "MRR@3"], retrieval_rows),
         "## ArXiv Full-Corpus Metrics",
-        markdown_table(["Experiment", "Task", "Model", "Loss", "Recall@1", "Recall@5", "Recall@10", "MRR@10"], arxiv_rows),
+        markdown_table(["Experiment", "Task", "Model", "Loss", "Recall@1", "Recall@5", "Recall@10", "MRR@10", "nDCG@10", "MAP@10", "Latency ms/query"], arxiv_rows),
+        "## Quantization Metrics",
+        markdown_table(["Experiment", "Model", "Variant", "Recall@10", "MRR@10", "nDCG@10", "MAP@10", "Latency ms/query", "Doc storage bytes"], quantization_rows),
         "## Hard-Negative Metrics",
         markdown_table(["Experiment", "Task", "Model", "Loss", "Accuracy@1", "MRR", "Avg rank", "Examples"], hard_rows),
     ]
 
     output_path.write_text("\n".join(body), encoding="utf-8")
+
+
+def write_metrics_jsonl(metrics_path: Path, summary_rows: list[dict[str, Any]]) -> None:
+    metrics_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(metrics_path, "w", encoding="utf-8") as f:
+        for row in summary_rows:
+            f.write(json.dumps(row, sort_keys=True) + "\n")
 
 
 def selected_experiments(names: list[str]) -> list[Experiment]:
@@ -991,6 +1120,7 @@ def selected_experiments(names: list[str]) -> list[Experiment]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run experiments.md end to end and write output.md.")
     parser.add_argument("--output", default="output.md")
+    parser.add_argument("--metrics-jsonl", default="outputs/metrics.jsonl")
     parser.add_argument("--only", nargs="*", default=[], help="Optional experiment ids or titles to run.")
     parser.add_argument("--continue-on-error", action="store_true")
     parser.add_argument("--timeout", type=int, default=0, help="Per-step timeout in seconds. 0 means no timeout.")
@@ -1000,6 +1130,7 @@ def main() -> int:
     env["PYTHONPATH"] = "."
 
     output_path = Path(args.output)
+    metrics_path = Path(args.metrics_jsonl)
     started_at = datetime.now().isoformat(timespec="seconds")
     command_rows: list[list[Any]] = []
     summary_rows: list[dict[str, Any]] = []
@@ -1021,6 +1152,7 @@ def main() -> int:
             command_rows.append([exp.exp_id, step.name, status, f"{elapsed:.1f}", f"`{format_cmd(step.command)}`"])
             summary_rows.extend(summarize_step(exp, step, stdout, returncode))
             write_output(output_path, started_at, command_rows, summary_rows)
+            write_metrics_jsonl(metrics_path, summary_rows)
 
             if returncode != 0:
                 log_dir = Path("outputs/experiment_logs")
@@ -1035,7 +1167,9 @@ def main() -> int:
                     return returncode
 
     write_output(output_path, started_at, command_rows, summary_rows)
+    write_metrics_jsonl(metrics_path, summary_rows)
     print(f"\nWrote {output_path}")
+    print(f"Wrote {metrics_path}")
     return 0
 
 

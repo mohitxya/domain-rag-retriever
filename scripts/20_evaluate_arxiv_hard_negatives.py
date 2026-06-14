@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -23,6 +24,8 @@ def main():
     parser.add_argument("--model", default="sentence-transformers/all-MiniLM-L6-v2")
     parser.add_argument("--limit", type=int, default=1000)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--query-prefix", default="")
+    parser.add_argument("--doc-prefix", default="")
     parser.add_argument("--output", default="")
     args = parser.parse_args()
 
@@ -43,9 +46,10 @@ def main():
     acc1 = 0
     reciprocal_ranks = []
     ranks = []
+    start = time.perf_counter()
 
     for triple in triples:
-        query = triple["query"]
+        query = args.query_prefix + triple["query"]
         positive_id = triple["positive_doc_id"]
         negative_ids = triple["negative_doc_ids"]
 
@@ -56,7 +60,7 @@ def main():
             continue
 
         candidate_texts = [
-            docs_by_id[cid]["text"]
+            args.doc_prefix + docs_by_id[cid]["text"]
             for cid in candidate_ids
         ]
 
@@ -99,10 +103,14 @@ def main():
     metrics = {
         "model": args.model,
         "triples": args.triples,
+        "query_prefix": args.query_prefix,
+        "doc_prefix": args.doc_prefix,
         "num_examples": total,
         "accuracy@1": acc1 / total if total else 0.0,
         "mrr": sum(reciprocal_ranks) / total if total else 0.0,
         "avg_rank": sum(ranks) / total if total else 0.0,
+        "eval_seconds": time.perf_counter() - start,
+        "latency_ms_per_example": ((time.perf_counter() - start) / total) * 1000 if total else 0.0,
     }
 
     print(json.dumps(metrics, indent=2))

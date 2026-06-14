@@ -1,20 +1,20 @@
 # Experiment Results
 
-Started: `2026-06-14T17:06:25`
-Finished: `2026-06-14T17:06:26`
+Started: `2026-06-14T17:45:24`
+Finished: `2026-06-14T17:45:24`
 
 ## Command Status
 | Experiment | Step | Status | Seconds | Command |
 | --- | --- | --- | --- | --- |
-| exp004 | Process default chunks | ok | 1.1 | `/home/mohit/miniforge3/bin/python -m scripts.04_process_data` |
+| exp001 | Run bag-of-words retrieval | ok | 0.0 | `/home/mohit/miniforge3/bin/python -m scripts.01_bow_retrieval` |
 
 ## Smoke Checks
-_No rows._
+| Experiment | Task | Query | Observed top result |
+| --- | --- | --- | --- |
+| exp001 | bow retrieval | What does RAG retrieve before answering? | D1 |
 
 ## Chunk/Data Processing
-| Experiment | Task | Input rows | Kept docs | Chunks | Avg chunk words | Splits |
-| --- | --- | --- | --- | --- | --- | --- |
-| exp004 | default chunks | 5 | 5 | 5 | 41.4000 | {"train": 5} |
+_No rows._
 
 ## ArXiv Data
 _No rows._
@@ -26,6 +26,9 @@ _No rows._
 _No rows._
 
 ## ArXiv Full-Corpus Metrics
+_No rows._
+
+## Quantization Metrics
 _No rows._
 
 ## Hard-Negative Metrics
