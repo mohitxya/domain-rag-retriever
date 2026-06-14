@@ -1,5 +1,7 @@
 # Domain RAG Retriever
-[RAG Retriever](/misc/rag_retriever.png)
+
+![RAG Retriever](/misc/rag_retriever.png)
+
 An end-to-end retrieval training lab for domain-specific RAG systems.
 
 The project builds a retrieval stack from first principles, then upgrades it into a resume-ready experimental system: preprocessing, dense retrieval, evaluation, contrastive fine-tuning, cached MNRL, hard-negative mining, encoder baselines, hybrid retrieval, cross-encoder reranking, and quantization tradeoff analysis.
